@@ -1,2 +1,3 @@
-### HGMD Update ###
-Little Java application that makes easier to update UGMD database
+***HGMD GENE/DISEASE UPDATE***
+Get data from the HGMD_Advanced_Substitution.csv and HGMD_Micro_Lesions.csv (downloadable from Biobase® database) and format out a file that one can import in Variant Studio® as "Gene/Disease HGMD" file.
+This folder contains source code and .jar (in out/artifacts/hgmd_update_jar/).
