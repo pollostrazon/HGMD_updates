@@ -77,6 +77,13 @@ public class Computation {
             element[4] = "HGMD";
             if (coordinates.indexOf(element) != -1) coordinates.set(i, element);
         }
+
+        coordinates.sort(new Comparator<String[]>() {
+            @Override
+            public int compare(String[] s1, String[] s2) {
+                return s1[0].compareTo(s2[0]);
+            }
+        });
     }
 
     private void WriteOut() {
