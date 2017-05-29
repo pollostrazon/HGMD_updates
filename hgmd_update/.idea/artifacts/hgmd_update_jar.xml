@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="hgmd_update:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/hgmd_update_jar</output-path>
-    <root id="archive" name="hgmd_update.jar">
-      <element id="module-output" name="hgmd_update" />
-    </root>
-  </artifact>
-</component>

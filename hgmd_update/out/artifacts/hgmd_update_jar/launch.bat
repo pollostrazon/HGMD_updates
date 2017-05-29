@@ -1,1 +1,0 @@
-java -jar .\hgmd_update.jar
