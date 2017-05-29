@@ -14,13 +14,16 @@ public class Computation {
 
     String pathAdvSub, version, pathOut;
     ArrayList<String[]> coordinates;
-    ArrayList<String[]> out;
+    ArrayList<String> out;
+    HashSet<String> nodup;
 
     public Computation(String pathAdvSub, String version, String pathOut) {
         this.pathAdvSub = pathAdvSub;
         this.version = version;
         this.pathOut = pathOut;
         this.coordinates = new ArrayList<>();
+        this.nodup = new HashSet<>();
+        this.out = new ArrayList<>();
     }
 
     public void start() {
@@ -75,13 +78,18 @@ public class Computation {
             element[2] = element[2].replaceAll("([AaGgTtCc]+\\[)|(\\/.+)","");
             element[3] = element[3].replaceAll("([AaGgTtCc]+\\[\\w\\/)|(\\].+)","");
             element[4] = "HGMD";
-            if (coordinates.indexOf(element) != -1) coordinates.set(i, element);
+            coordinates.set(i, element);
         }
 
-        coordinates.sort(new Comparator<String[]>() {
+        for (String[] e : coordinates) {
+            nodup.add(String.join("\t",e));
+        }
+
+        out.addAll(nodup);
+        out.sort(new Comparator<String>() {
             @Override
-            public int compare(String[] s1, String[] s2) {
-                return s1[0].compareTo(s2[0]);
+            public int compare(String o1, String o2) {
+                return o1.compareTo(o2);
             }
         });
     }
@@ -96,11 +104,9 @@ public class Computation {
             FileWriter fw = new FileWriter(pathOut + fileName);
             s = "chr" + separator + "position" + separator + "ref" + separator + "variant" + separator + "annotation" + newline;
             fw.append(s);
-            int i=0;
 
-            for (String[] c : coordinates) {
-                s = c[0] + separator + c[1] + separator + c[2] + separator + c[3] + separator + c[4] + newline;
-                fw.append(s);
+            for (String l : out) {
+                fw.append(l + newline);
             }
 
             fw.close();
