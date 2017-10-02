@@ -1,21 +1,17 @@
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
 /**
  * Created by Paolo on 27/03/2017.
+ * This class hosts the main computation.
  */
 public class Computation {
 
-    private final int ADVSUBCOLS = 30;
-    private final int MICLESCOLS = 24;
-
-    String pathAdvSub, version, pathOut;
-    ArrayList<String[]> coordinates;
-    ArrayList<String> out;
-    HashSet<String> nodup;
+    private String pathAdvSub, version, pathOut;
+    private ArrayList<String[]> coordinates;
+    private ArrayList<String> out;
+    private HashSet<String> nodup;
 
     public Computation(String pathAdvSub, String version, String pathOut) {
         this.pathAdvSub = pathAdvSub;

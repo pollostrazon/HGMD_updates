@@ -6,11 +6,12 @@ import java.util.Scanner;
 
 /**
  * Created by Paolo on 27/03/2017.
+ * This class hosts the main computation.
  */
 public class Computation {
 
-    String pathAdvSub, pathMicroLesions, version, pathOut;
-    ArrayList<Pair> table;
+    private String pathAdvSub, pathMicroLesions, version, pathOut;
+    private ArrayList<Pair> table;
 
     public Computation(String pathAdvSub, String pathMicroLesions, String version, String pathOut) {
         this.pathAdvSub = pathAdvSub;

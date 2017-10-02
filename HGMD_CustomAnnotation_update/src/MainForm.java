@@ -4,6 +4,7 @@ import java.awt.event.ActionListener;
 
 /**
  * Created by Paolo on 27/03/2017.
+ * This class contains the code related to the GUI.
  */
 public class MainForm extends JFrame implements ActionListener{
 
