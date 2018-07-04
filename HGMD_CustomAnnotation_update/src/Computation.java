@@ -56,8 +56,8 @@ public class Computation {
             line = sc.nextLine().split(regex);
             element[0] = line[5];
             element[1] = line[5];
-            element[2] = line[11];
-            element[3] = line[11];
+            element[2] = line[9];
+            element[3] = line[9];
             if (!(element[0].equals("NULL") || element[1].equals("NULL"))) coordinates.add(element);
         }
         sc.close();

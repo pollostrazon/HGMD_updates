@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 /**
  * Created by Paolo on 27/03/2017.
@@ -62,7 +63,7 @@ public class MainForm extends JFrame implements ActionListener{
 
             pathAdvSub = pathAdvSubText.getText();
             version = versionText.getText();
-            pathOut = pathOutText.getText() + "\\";
+            pathOut = pathOutText.getText() + File.separator;
             if (pathAdvSub.equals("") || versionText.equals("") || pathOutText.equals("")) {
                 JOptionPane.showMessageDialog(this,"I campi non sono compilati correttamente",
                         "Errore",JOptionPane.ERROR_MESSAGE);

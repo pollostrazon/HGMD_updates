@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 /**
  * Created by Paolo on 27/03/2017.
@@ -22,6 +23,7 @@ public class MainForm extends JFrame implements ActionListener{
     private JLabel pathMicroLesionLabel;
     private JLabel versionLabel;
     private JLabel pathOutLabel;
+    private JCheckBox ignoreCheckBox;
 
     public MainForm() {
         super("HGMD Update");
@@ -70,12 +72,12 @@ public class MainForm extends JFrame implements ActionListener{
             pathAdvSub = pathAdvSubText.getText();
             pathMicroLesions = pathMicroLesionsText.getText();
             version = versionText.getText();
-            pathOut = pathOutText.getText() + "\\";
-            if (pathAdvSub.equals("") || pathMicroLesions.equals("") || versionText.equals("") || pathOutText.equals("")) {
+            pathOut = pathOutText.getText() + File.separator;
+            if ((!ignoreCheckBox.isSelected() && pathAdvSub.equals("")) || pathMicroLesions.equals("") || versionText.equals("") || pathOutText.equals("")) {
                 JOptionPane.showMessageDialog(this,"I campi non sono compilati correttamente",
                         "Errore",JOptionPane.ERROR_MESSAGE);
             } else {
-                Computation comp = new Computation(pathAdvSub, pathMicroLesions, version, pathOut);
+                Computation comp = new Computation(ignoreCheckBox.isSelected() ? null : pathAdvSub, pathMicroLesions, version, pathOut);
                 comp.start();
             }
         }

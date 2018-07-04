@@ -24,7 +24,7 @@ public class Computation {
     public void start() {
         try {
             try {
-                readAdvSub();
+                if (pathAdvSub != null) readAdvSub();
                 readMicroLesions();
             } catch(FileNotFoundException e) {
                 JOptionPane.showMessageDialog(null,"Errore nella lettura dei file (Inesistenti?)",
