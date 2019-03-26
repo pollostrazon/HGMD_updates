@@ -3,39 +3,47 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Created by Paolo on 27/03/2017.
  * This class hosts the main computation.
  */
 public class Computation {
 
-    private String pathAdvSub, version, pathOut;
-    private ArrayList<String[]> coordinates;
-    private ArrayList<String> out;
-    private HashSet<String> nodup;
+    //String for advancedSubstitution file, version and result path
+    private String pathAdvSub, pathOldAnn, version, pathOut;
+    //HashSet of custom annotations, because they need to be unique
+    private HashSet<CustomAnnotationVariant> custAnnSet;
+    //List of custom annotations, just to ensure order
+    private ArrayList<CustomAnnotationVariant> custAnnList;
 
-    public Computation(String pathAdvSub, String version, String pathOut) {
+    public Computation(String pathAdvSub, String pathOldAnn, String version, String pathOut) {
         this.pathAdvSub = pathAdvSub;
+        this.pathOldAnn = pathOldAnn;
         this.version = version;
         this.pathOut = pathOut;
-        this.coordinates = new ArrayList<>();
-        this.nodup = new HashSet<>();
-        this.out = new ArrayList<>();
+        this.custAnnSet = new HashSet<>();
+        this.custAnnList = new ArrayList<>();
     }
 
-    public void start() {
+    /**
+     * Normal computation pipeline
+     */
+    public void normal() {
         try {
-            try {
-                readAdvSub();
-            } catch(FileNotFoundException e) {
-                JOptionPane.showMessageDialog(null,"Errore nella lettura dei file (Inesistenti?)",
-                        "Errore",JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+            readFile(this.pathAdvSub, this.custAnnSet, 0);
+            if (! this.pathOldAnn.equals(""))
+                readFile(this.pathOldAnn, this.custAnnSet, 1);
 
-            Compute();
-            WriteOut();
-            JOptionPane.showMessageDialog(null,"Tutto è andato secondo i piani.",
+            ensureOrder();
+
+            writeOut();
+
+            JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
                     "Informazione", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(null, "File non esistente!",
+                    "Errore",JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+
         } catch (Throwable t) {
             JOptionPane.showMessageDialog(null,t.getMessage(),
                     "Errore",JOptionPane.ERROR_MESSAGE);
@@ -44,53 +52,78 @@ public class Computation {
 
     }
 
-    private void readAdvSub() throws FileNotFoundException {
-        Scanner sc = new Scanner(new BufferedReader(new FileReader(this.pathAdvSub)));
-        System.out.println(sc.delimiter());
-        String[] line;
-        sc.nextLine(); //skip the intestation
-        String regex = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
+    /**
+     * Db-like file merging only
+     */
+    public void fileMerge() {
+        try {
+            readFile(this.pathAdvSub, this.custAnnSet, 1);
+            readFile(this.pathOldAnn, this.custAnnSet, 1);
 
+            ensureOrder();
+
+            writeOut();
+
+            JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
+                    "Informazione", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(null, "File non esistente!",
+                    "Errore",JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+
+        } catch (Throwable t) {
+            JOptionPane.showMessageDialog(null,t.getMessage(),
+                    "Errore",JOptionPane.ERROR_MESSAGE);
+            t.printStackTrace();
+        }
+    }
+
+    /**
+     * Read data from raw file or db-like file into dest in the correct format
+     * @param path file path
+     * @param dest where to store data
+     * @param mode 0 if raw file, 1 if db-like
+     * @throws FileNotFoundException
+     */
+    private void readFile(String path, Collection<CustomAnnotationVariant> dest, int mode) throws FileNotFoundException {
+        Scanner sc = new Scanner(new BufferedReader(new FileReader(path)));
+
+        String[] line;
+        String regex = (mode == 0) ? ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)" : "\t";
+        CustomAnnotationVariant element;
+        sc.nextLine(); //skip the first line
+
+        //File parsing
         while(sc.hasNext()) {
-            String[] element = new String[5];
             line = sc.nextLine().split(regex);
-            element[0] = line[5];
-            element[1] = line[5];
-            element[2] = line[9];
-            element[3] = line[9];
-            if (!(element[0].equals("NULL") || element[1].equals("NULL"))) coordinates.add(element);
+
+            if (mode == 0) {
+                //need to be transformed
+                element = new CustomAnnotationVariant(line[5], line[5], line[9], line[9]);
+                element.transform();
+            } else
+                element = new CustomAnnotationVariant(line[0], line[1], line[2], line[3]);
+
+            if (!(element.getChr().equals("NULL") || element.getPos().equals("NULL"))) dest.add(element);
         }
         sc.close();
     }
 
-    private void Compute() {
-        int length = coordinates.size();
-        String[] element;
+    /**
+     * Passes the set to a list and orders it
+     */
+    private void ensureOrder() {
+        this.custAnnList.addAll(this.custAnnSet);
 
-        for (int i = 0; i < length; i++) {
-            element = coordinates.get(i);
-            element[0] = element[0].replaceAll("(chr)|:(.+)","");
-            element[1] = element[1].replaceAll("(chr(\\d+|X|x|Y|y):)|(:[-+])","");
-            element[2] = element[2].replaceAll("([AaGgTtCc]+\\[)|(\\/.+)","");
-            element[3] = element[3].replaceAll("([AaGgTtCc]+\\[\\w\\/)|(\\].+)","");
-            element[4] = "HGMD";
-            coordinates.set(i, element);
-        }
-
-        for (String[] e : coordinates) {
-            nodup.add(String.join("\t",e));
-        }
-
-        out.addAll(nodup);
-        out.sort(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareTo(o2);
-            }
-        });
+        this.custAnnList.sort(CustomAnnotationVariant::compareTo);
     }
 
-    private void WriteOut() {
+    /**
+     * Writes computation results into the chosen file in the correct format
+     */
+    private void writeOut() {
+        //params set
         String fileName = "CustomAnnotation_Variant_HGMD_" + this.version + ".txt";
         String separator = "\t";
         String newline = System.lineSeparator();
@@ -98,11 +131,17 @@ public class Computation {
 
         try {
             FileWriter fw = new FileWriter(pathOut + fileName);
-            s = "chr" + separator + "position" + separator + "ref" + separator + "variant" + separator + "annotation" + newline;
+            //builds the metadata line
+            s = "chr" + separator +
+                    "position" + separator +
+                    "ref" + separator +
+                    "variant" + separator +
+                    "annotation" + newline;
             fw.append(s);
 
-            for (String l : out) {
-                fw.append(l + newline);
+            //adds all the lines
+            for (CustomAnnotationVariant customAnnotationVariant : custAnnList) {
+                fw.append(customAnnotationVariant.join(separator) + newline);
             }
 
             fw.close();

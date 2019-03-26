@@ -4,7 +4,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 /**
- * Created by Paolo on 27/03/2017.
  * This class contains the code related to the GUI.
  */
 public class MainForm extends JFrame implements ActionListener{
@@ -24,7 +23,16 @@ public class MainForm extends JFrame implements ActionListener{
     private JLabel versionLabel;
     private JLabel pathOutLabel;
     private JCheckBox ignoreCheckBox;
+    private JLabel soloMergeLabel;
+    private JCheckBox onlyMergeCheckBox;
+    private JLabel pathOldAnnLabel;
+    private JTextField pathOldAnnText;
+    private JButton pathOldAnnButton;
+    private JFileChooser fileChooser;
 
+    /**
+     * Main form
+     */
     public MainForm() {
         super("HGMD Update");
 
@@ -36,53 +44,99 @@ public class MainForm extends JFrame implements ActionListener{
         pathOutButton.setActionCommand("Set_path_out");
         updateButton.addActionListener(this);
         updateButton.setActionCommand("Update");
+        onlyMergeCheckBox.addActionListener(this);
+        onlyMergeCheckBox.setActionCommand("Check_merge");
 
     }
 
+    /**
+     * Performs an action based on which button was clicked
+     * @param e ActionEvent generated from the click of a button
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String choice = e.getActionCommand();
 
-        JFileChooser fileChooser;
-        if (choice.equals("Search_Adv_Sub") || choice.equals("Search_Micro_Lesions")) {
-            fileChooser = new JFileChooser();
-            int retVal = fileChooser.showOpenDialog(this);
+        switch (choice) {
+            case "Search_Adv_Sub":
+                //chooses Advanced Substitution file
+                pathAdvSubText.setText(getPath(false));
+                break;
 
-            if (retVal == JFileChooser.APPROVE_OPTION) {
-                String s = fileChooser.getSelectedFile().getAbsolutePath();
+            case "Search_Micro_Lesions":
+                //chooses old HGMD database file
+                pathMicroLesionsText.setText(getPath(false));
+                break;
 
-                if (choice.equals("Search_Adv_Sub")) {
-                    pathAdvSubText.setText(s);
-                } else if (choice.equals("Search_Micro_Lesions")) {
-                    pathMicroLesionsText.setText(s);
+            case "Set_path_out":
+                //chooses result file
+                pathOutText.setText(getPath(true));
+                break;
+
+            case "Check_merge":
+                //makes sure first field is disabled if mode is only merge
+                pathAdvSubText.setEnabled(!pathAdvSubText.isEnabled());
+                pathAdvSubButton.setEnabled(!pathAdvSubButton.isEnabled());
+                ignoreCheckBox.setEnabled(!ignoreCheckBox.isEnabled());
+                break;
+
+            case "Update":
+                //Starts the computation
+                String pathAdvSub, pathMicroLesions, pathOldAnn, version, pathOut;
+
+                pathAdvSub = ignoreCheckBox.isSelected() ? null : pathAdvSubText.getText();
+                pathMicroLesions = pathMicroLesionsText.getText();
+                pathOldAnn = pathOldAnnText.getText();
+                version = versionText.getText();
+                pathOut = pathOutText.getText() + File.separator;
+
+                if (onlyMergeCheckBox.isSelected()) {
+                    if (pathMicroLesions.equals("") || pathOldAnn.equals("") ||
+                            version.equals("") || pathOut.equals(File.separator)) {
+                        JOptionPane.showMessageDialog(this, "I campi non sono compilati correttamente",
+                                "Errore", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        Computation comp = new Computation(null, pathMicroLesions, pathOldAnn, version, pathOut);
+                        comp.fileMerge();
+                    }
+                } else {
+                    if ((!ignoreCheckBox.isSelected() && pathAdvSub.equals("")) ||
+                            pathMicroLesions.equals("") || version.equals("") ||
+                            pathOut.equals(File.separator)) {
+                        JOptionPane.showMessageDialog(this, "I campi non sono compilati correttamente",
+                                "Errore", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        Computation comp = new Computation(pathAdvSub, pathMicroLesions, pathOldAnn, version, pathOut);
+                        comp.normal();
+                    }
                 }
-            }
-        } else if (choice.equals("Set_path_out")){
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int retVal = fileChooser.showOpenDialog(this);
-
-            if (retVal == JFileChooser.APPROVE_OPTION) {
-                String s = fileChooser.getSelectedFile().getAbsolutePath();
-                pathOutText.setText(s);
-            }
-        } else if (choice.equals("Update")) {
-            String pathAdvSub, pathMicroLesions, version, pathOut;
-
-            pathAdvSub = pathAdvSubText.getText();
-            pathMicroLesions = pathMicroLesionsText.getText();
-            version = versionText.getText();
-            pathOut = pathOutText.getText() + File.separator;
-            if ((!ignoreCheckBox.isSelected() && pathAdvSub.equals("")) || pathMicroLesions.equals("") || versionText.equals("") || pathOutText.equals("")) {
-                JOptionPane.showMessageDialog(this,"I campi non sono compilati correttamente",
-                        "Errore",JOptionPane.ERROR_MESSAGE);
-            } else {
-                Computation comp = new Computation(ignoreCheckBox.isSelected() ? null : pathAdvSub, pathMicroLesions, version, pathOut);
-                comp.start();
-            }
+                break;
         }
     }
 
+    /**
+     * Shows a new file/dir-chooser window
+     * @param dir true if dir, false if file
+     * @return absolute path of the file/dir
+     */
+    public String getPath(boolean dir) {
+        fileChooser = new JFileChooser();
+        if (dir) fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int retVal = fileChooser.showOpenDialog(this);
+        String s = "";
+
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            s = fileChooser.getSelectedFile().getAbsolutePath();
+
+        }
+
+        return s;
+    }
+
+    /**
+     * Main class
+     * @param args
+     */
     public static void main(String[] args) {
         MainForm mf = new MainForm();
         mf.setContentPane(mf.mainFormPanel);
