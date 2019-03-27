@@ -1,14 +1,13 @@
 import javax.swing.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * This class hosts the main computation.
  */
 public class Computation {
+    private static final String GENE_COL_NAME = "gene";
+    private static final String DISEASE_COL_NAME = "disease";
 
     //String for advancedSubstitution file, microLesion file, version and result path
     private String pathAdvSub, pathMicroLesions, pathOldAnn, version, pathOut;
@@ -32,14 +31,16 @@ public class Computation {
      */
     public void normal() {
         try {
-            readFile(this.pathAdvSub, this.geneAnnotationSet, 0);
-            readFile(this.pathMicroLesions, this.geneAnnotationSet, 1);
-            readFile(this.pathOldAnn, this.geneAnnotationSet, 2);
+            if (this.pathAdvSub != null)
+                readFile(this.pathAdvSub, this.geneAnnotationSet, 0);
+            readFile(this.pathMicroLesions, this.geneAnnotationSet, 0);
+            if (! this.pathOldAnn.equals(""))
+                readFile(this.pathOldAnn, this.geneAnnotationSet, 1);
 
             ensureOrder();
             mergeGeneAnn();
 
-            writeOut();
+            writeOut(this.geneAnnotationList);
             JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
                     "Informazione", JOptionPane.INFORMATION_MESSAGE);
         } catch(FileNotFoundException e) {
@@ -59,13 +60,13 @@ public class Computation {
      */
     public void fileMerge() {
         try {
-            readFile(this.pathMicroLesions, this.geneAnnotationSet, 2);
-            readFile(this.pathOldAnn, this.geneAnnotationSet, 2);
+            readFile(this.pathMicroLesions, this.geneAnnotationSet, 1);
+            readFile(this.pathOldAnn, this.geneAnnotationSet, 1);
 
             ensureOrder();
             mergeGeneAnn();
 
-            writeOut();
+            writeOut(this.geneAnnotationList);
 
             JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
                     "Informazione", JOptionPane.INFORMATION_MESSAGE);
@@ -93,35 +94,36 @@ public class Computation {
         Scanner sc = new Scanner(new BufferedReader(new FileReader(path)));
 
         String[] line;
-        String regex = (mode == 0 || mode == 1) ? ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)" : "\t";
+        String regex = (mode == 0) ? ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)" : "\t";
         GeneAnnotationPair element;
+        int gene_index = -1, disease_index = -1;
 
-        sc.nextLine(); //skip the first line
+        //In mode 0, searches for columns we need in metadata line, throws an exception in the case they are not found
+        if (mode == 0) {
+            line = sc.nextLine().split(regex);
+            for (int i = 0; i < line.length; i++) {
+                if (line[i].equals(GENE_COL_NAME))
+                    gene_index = i;
+                if (line[i].equals(DISEASE_COL_NAME))
+                    disease_index = i;
+            }
+            if (gene_index == -1 || disease_index == -1)
+                throw new RuntimeException("Non sono state trovate le indicazioni relative alle colonne interessate.");
+        } else {
+            sc.nextLine(); //We don't care about the first line in other modes
+        }
 
         //File parsing
         while(sc.hasNext()) {
             line = sc.nextLine().split(regex);
 
-            switch (mode) {
-                case 0:
-                    element = new GeneAnnotationPair(
-                            line[8].replace("\"","").toUpperCase().trim(),
-                            line[9].replace("\"","").trim()
-                    );
-                    break;
-
-                case 1:
-                    element = new GeneAnnotationPair(
-                            line[2].replace("\"","").toUpperCase().trim(),
-                            line[3].replace("\"","").trim()
-                    );
-                    break;
-
-                default:
-                    element = new GeneAnnotationPair(
-                            line[0].replace("\"","").toUpperCase().trim(),
-                            line[1].replace("\"","").trim()
-                    );
+            if (mode == 0) {
+                element = new GeneAnnotationPair(
+                        line[gene_index].replace("\"","").toUpperCase().trim(),
+                        line[disease_index].replace("\"","").trim()
+                );
+            } else {
+                element = new GeneAnnotationPair(line[0], line[1]);
             }
 
             dest.add(element);
@@ -162,7 +164,7 @@ public class Computation {
                     this.geneAnnotationList.remove(i + 1);
                 }
 
-            } while (sameGene);
+            } while (sameGene && i + 1 < this.geneAnnotationList.size());
         }        
     }
 
@@ -188,7 +190,7 @@ public class Computation {
         for (int i = 0; i < annotationsList.size() - 1; i++) {
             annotation += annotationsList.get(i) + separator;
         }
-        annotation += annotationsList.get(annotationsList.size());
+        annotation += annotationsList.get(annotationsList.size() - 1);
 
         return annotation;
     }
@@ -196,24 +198,21 @@ public class Computation {
     /**
      * Writes computation results into the chosen file in the correct format
      */
-    private void writeOut() {
+    private void writeOut(Collection<GeneAnnotationPair> coll) {
         String fileName = "CustomGeneAnnotation_HGMD_" + this.version + ".txt";
         String separator = "\t";
-        String newline = "\r\n";
-        String gene = "";
+        String newline = System.lineSeparator();
 
         try {
             FileWriter fw = new FileWriter(pathOut + fileName);
             //builds the metadata line
-            String s = "gene" + separator + "annotation";
+            String s = "gene" + separator + "annotation" + newline;
             fw.append(s);
 
             //adds all the lines
-            for (GeneAnnotationPair geneAnnotationPair : geneAnnotationList) {
+            for (GeneAnnotationPair geneAnnotationPair : coll) {
                 fw.append(geneAnnotationPair.join(separator) + newline);
             }
-            //not sure if needed
-            fw.append(newline);
 
             fw.close();
         } catch (IOException e) {

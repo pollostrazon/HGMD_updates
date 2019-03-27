@@ -40,10 +40,14 @@ public class MainForm extends JFrame implements ActionListener{
         pathAdvSubButton.setActionCommand("Search_Adv_Sub");
         pathMicroLesionsButton.addActionListener(this);
         pathMicroLesionsButton.setActionCommand("Search_Micro_Lesions");
+        pathOldAnnButton.addActionListener(this);
+        pathOldAnnButton.setActionCommand("Search_Old_Ann");
         pathOutButton.addActionListener(this);
         pathOutButton.setActionCommand("Set_path_out");
         updateButton.addActionListener(this);
         updateButton.setActionCommand("Update");
+        ignoreCheckBox.addActionListener(this);
+        ignoreCheckBox.setActionCommand("Check_ignore");
         onlyMergeCheckBox.addActionListener(this);
         onlyMergeCheckBox.setActionCommand("Check_merge");
 
@@ -64,13 +68,24 @@ public class MainForm extends JFrame implements ActionListener{
                 break;
 
             case "Search_Micro_Lesions":
-                //chooses old HGMD database file
+                //chooses Micro Lesions file
                 pathMicroLesionsText.setText(getPath(false));
+                break;
+
+            case "Search_Old_Ann":
+                //chooses old HGMD database file
+                pathOldAnnText.setText(getPath(false));
                 break;
 
             case "Set_path_out":
                 //chooses result file
                 pathOutText.setText(getPath(true));
+                break;
+
+            case "Check_ignore":
+                //makes sure first field is disabled if mode is only merge
+                pathAdvSubText.setEnabled(!pathAdvSubText.isEnabled());
+                pathAdvSubButton.setEnabled(!pathAdvSubButton.isEnabled());
                 break;
 
             case "Check_merge":

@@ -13,11 +13,7 @@ public class CustomAnnotationVariant implements Comparable<CustomAnnotationVaria
     }
 
     public CustomAnnotationVariant(String chr, String pos, String ref, String variant) {
-        this.chr = chr;
-        this.pos = pos;
-        this.ref = ref;
-        this.variant = variant;
-        this.annotation = "HGMD"; //needed
+        this(chr, pos, ref, variant, "HGMD");
     }
 
     public String getChr() {
@@ -90,7 +86,23 @@ public class CustomAnnotationVariant implements Comparable<CustomAnnotationVaria
 
     @Override
     public int compareTo(CustomAnnotationVariant customAnnotationVariant) {
-        return this.join().compareTo(customAnnotationVariant.join());
+        int cmp;
+        cmp = this.chr.compareTo(customAnnotationVariant.chr);
+
+        if (cmp == 0) {
+            cmp = Integer.compare(Integer.parseInt(this.pos),
+                    Integer.parseInt(customAnnotationVariant.pos));
+
+            if (cmp == 0) {
+                cmp = String.join(this.ref, this.variant, this.annotation)
+                        .compareTo(
+                        String.join(customAnnotationVariant.ref,
+                                customAnnotationVariant.variant,
+                                customAnnotationVariant.annotation));
+            }
+        }
+
+        return cmp;
     }
 
     @Override
@@ -98,5 +110,16 @@ public class CustomAnnotationVariant implements Comparable<CustomAnnotationVaria
         if (o instanceof CustomAnnotationVariant) {
             return this.compareTo((CustomAnnotationVariant) o) == 0;
         } else return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 3*hash + this.chr.hashCode();
+        hash = 3*hash + this.pos.hashCode();
+        hash = 3*hash + this.ref.hashCode();
+        hash = 3*hash + this.variant.hashCode();
+        hash = 3*hash + this.annotation.hashCode();
+        return hash;
     }
 }

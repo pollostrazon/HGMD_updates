@@ -31,7 +31,7 @@ public class GeneAnnotationPair implements Comparable<GeneAnnotationPair> {
      * @return joined string
      */
     public String join(CharSequence cs) {
-        return String.join(this.gene, cs, this.annotation);
+        return this.gene + cs + this.annotation;
     }
 
     /**
@@ -58,5 +58,13 @@ public class GeneAnnotationPair implements Comparable<GeneAnnotationPair> {
             return this.gene.equals(((GeneAnnotationPair) o).gene) &&
                     this.annotation.equals(((GeneAnnotationPair) o).annotation);
         } else return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 3*hash + this.gene.hashCode();
+        hash = 3*hash + this.annotation.hashCode();
+        return hash;
     }
 }

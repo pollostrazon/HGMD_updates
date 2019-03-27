@@ -6,6 +6,8 @@ import java.util.*;
  * This class hosts the main computation.
  */
 public class Computation {
+    private static final String COORDINATES_COL_NAME = "genomic_coordinates_hg19";
+    private static final String VARIANT_COL_NAME = "sequence_context_hg19";
 
     //String for advancedSubstitution file, version and result path
     private String pathAdvSub, pathOldAnn, version, pathOut;
@@ -34,7 +36,7 @@ public class Computation {
 
             ensureOrder();
 
-            writeOut();
+            writeOut(this.custAnnList);
 
             JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
                     "Informazione", JOptionPane.INFORMATION_MESSAGE);
@@ -62,7 +64,7 @@ public class Computation {
 
             ensureOrder();
 
-            writeOut();
+            writeOut(this.custAnnList);
 
             JOptionPane.showMessageDialog(null, "Tutto è andato secondo i piani.",
                     "Informazione", JOptionPane.INFORMATION_MESSAGE);
@@ -90,22 +92,45 @@ public class Computation {
         Scanner sc = new Scanner(new BufferedReader(new FileReader(path)));
 
         String[] line;
+
         String regex = (mode == 0) ? ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)" : "\t";
         CustomAnnotationVariant element;
-        sc.nextLine(); //skip the first line
+        int coordinates_index = -1, variant_index = -1;
+
+        //In mode 0, searches for columns we need in metadata line, throws an exception in the case they are not found
+        if (mode == 0) {
+            line = sc.nextLine().split(regex);
+            for (int i = 0; i < line.length; i++) {
+                if (line[i].equals(COORDINATES_COL_NAME))
+                    coordinates_index = i;
+                if (line[i].equals(VARIANT_COL_NAME))
+                    variant_index = i;
+            }
+            if (coordinates_index == -1 || variant_index == -1)
+                throw new RuntimeException("Non sono state trovate le indicazioni relative alle colonne interessate.");
+        } else {
+            sc.nextLine(); //We don't care about the first line in other modes
+        }
 
         //File parsing
         while(sc.hasNext()) {
             line = sc.nextLine().split(regex);
 
             if (mode == 0) {
-                //need to be transformed
-                element = new CustomAnnotationVariant(line[5], line[5], line[9], line[9]);
+                //needs to be transformed
+                element = new CustomAnnotationVariant(
+                        line[coordinates_index],
+                        line[coordinates_index],
+                        line[variant_index],
+                        line[variant_index]
+                );
                 element.transform();
             } else
                 element = new CustomAnnotationVariant(line[0], line[1], line[2], line[3]);
 
-            if (!(element.getChr().equals("NULL") || element.getPos().equals("NULL"))) dest.add(element);
+            if (!(element.getChr().equals("NULL") || element.getChr().equals("")
+                    || element.getPos().equals("NULL") || element.getPos().equals("")))
+                dest.add(element);
         }
         sc.close();
     }
@@ -122,7 +147,7 @@ public class Computation {
     /**
      * Writes computation results into the chosen file in the correct format
      */
-    private void writeOut() {
+    private void writeOut(Collection<CustomAnnotationVariant> coll) {
         //params set
         String fileName = "CustomAnnotation_Variant_HGMD_" + this.version + ".txt";
         String separator = "\t";
@@ -140,7 +165,7 @@ public class Computation {
             fw.append(s);
 
             //adds all the lines
-            for (CustomAnnotationVariant customAnnotationVariant : custAnnList) {
+            for (CustomAnnotationVariant customAnnotationVariant : coll) {
                 fw.append(customAnnotationVariant.join(separator) + newline);
             }
 
