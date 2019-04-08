@@ -6,14 +6,38 @@ import java.util.*;
  * This class hosts the main computation.
  */
 public class Computation {
+    /**
+     * Column title for coordinates in metadata row
+     */
     private static final String COORDINATES_COL_NAME = "genomic_coordinates_hg19";
+    /**
+     * Column title for reference and variant in metadata row
+     */
     private static final String VARIANT_COL_NAME = "sequence_context_hg19";
 
-    //String for advancedSubstitution file, version and result path
-    private String pathAdvSub, pathOldAnn, version, pathOut;
-    //HashSet of custom annotations, because they need to be unique
+    /**
+     * String for advanced substitution file
+     */
+    private String pathAdvSub;
+    /**
+     * String for old custom annotation file
+     */
+    private String pathOldAnn;
+    /**
+     * String for output path
+     */
+    private String pathOut;
+    /**
+     * String for version
+     */
+    private String version;
+    /**
+     * HashSet of custom annotations, because they need to be unique
+     */
     private HashSet<CustomAnnotationVariant> custAnnSet;
-    //List of custom annotations, just to ensure order
+    /**
+     * List of custom annotations, just to ensure order
+     */
     private ArrayList<CustomAnnotationVariant> custAnnList;
 
     public Computation(String pathAdvSub, String pathOldAnn, String version, String pathOut) {

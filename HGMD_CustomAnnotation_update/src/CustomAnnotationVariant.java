@@ -2,7 +2,26 @@
  * This class represents a custom annotation
  */
 public class CustomAnnotationVariant implements Comparable<CustomAnnotationVariant> {
-    private String chr, pos, ref, variant, annotation;
+    /**
+     * String for chromosome
+     */
+    private String chr;
+    /**
+     * String for position
+     */
+    private String pos;
+    /**
+     * String for reference
+     */
+    private String ref;
+    /**
+     * String for variant
+     */
+    private String variant;
+    /**
+     * String for annotation
+     */
+    private String annotation;
 
     public CustomAnnotationVariant(String chr, String pos, String ref, String variant, String annotation) {
         this.chr = chr;

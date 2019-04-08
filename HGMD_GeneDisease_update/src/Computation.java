@@ -6,14 +6,42 @@ import java.util.*;
  * This class hosts the main computation.
  */
 public class Computation {
+    /**
+     * Column title for gene in metadata row
+     */
     private static final String GENE_COL_NAME = "gene";
+    /**
+     * Column title for disease in metadata row
+     */
     private static final String DISEASE_COL_NAME = "disease";
 
-    //String for advancedSubstitution file, microLesion file, version and result path
-    private String pathAdvSub, pathMicroLesions, pathOldAnn, version, pathOut;
-    //Set of gene-disease pair, because they need to be unique
+    /**
+     * String for advancedSubstitution file
+     */
+    private String pathAdvSub;
+    /**
+     * String for micro lesions file
+     */
+    private String pathMicroLesions;
+    /**
+     * String for old gene-disease file
+     */
+    private String pathOldAnn;
+    /**
+     * String for version
+     */
+    private String version;
+    /**
+     * String for output path
+     */
+    private String pathOut;
+    /**
+     * HashSet of gene-disease pairs, because they need to be unique
+     */
     private HashSet<GeneAnnotationPair> geneAnnotationSet;
-    //List of gene-disease pair, just to ensure order
+    /**
+     * List of gene-disease pairs, just to ensure order
+     */
     private ArrayList<GeneAnnotationPair> geneAnnotationList;
 
     public Computation(String pathAdvSub, String pathMicroLesions, String pathOldAnn, String version, String pathOut) {

@@ -2,7 +2,14 @@
  * This class represents a gene-annotation pair
  */
 public class GeneAnnotationPair implements Comparable<GeneAnnotationPair> {
-    private String gene, annotation;
+    /**
+     * String for gene
+     */
+    private String gene;
+    /**
+     * String for disease
+     */
+    private String annotation;
 
     public GeneAnnotationPair(String gene, String annotation) {
         this.gene = gene;
