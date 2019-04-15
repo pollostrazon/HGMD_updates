@@ -6,3 +6,7 @@ HGMD_GeneDisease_update/out/
 HGMD_GeneDisease_update/.idea/workspace.xml
 HGMD_GeneDisease_update/.idea/usage.statistics.xml
 HGMD_GeneDisease_update/.idea/tasks.xml
+
+*.pdf
+*.odt
+JavaDoc/
